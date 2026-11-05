@@ -843,13 +843,20 @@ function Home({
               href="/directory"
               link="Explore directory"
             />
-            <div className="people-preview">
-              {data?.members
-                .slice(0, 3)
-                .map((m, i) => (
+            {loading ? (
+              <Loading />
+            ) : data?.members.length ? (
+              <div className="people-preview">
+                {data.members.slice(0, 3).map((m, i) => (
                   <MemberCard key={m.id} member={m} index={i} compact />
                 ))}
-            </div>
+              </div>
+            ) : (
+              <Empty
+                title="Your community starts here"
+                description="Verified batchmates who opt into the directory will appear here. Complete batch verification to join them."
+              />
+            )}
           </section>
         </div>
         <aside className="dashboard-secondary">

@@ -19,6 +19,10 @@
   "engines": {
     "node": "22.x"
   },
+  "overrides": {
+    "nodemailer": "10.1.4",
+    "deepmerge-ts": "8.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "1.59.1"
   }
