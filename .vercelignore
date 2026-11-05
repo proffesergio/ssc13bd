@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+frontend/.next
+frontend/.next-dev
+.env*
+**/.env*
+!**/.env.example
+.git
+.aws
+.agents
+.codex
+test-results
+playwright-report
+*.tsbuildinfo
+**/*.tsbuildinfo

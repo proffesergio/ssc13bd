@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  MEMBER
+  MODERATOR
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id String @id @default(cuid())
+  name String?
+  email String? @unique
+  emailVerified DateTime?
+  image String?
+  role Role @default(MEMBER)
+  batchVerified Boolean @default(false)
+  district String?
+  profession String?
+  organization String?
+  bio String?
+  bloodGroup String?
+  directoryVisible Boolean @default(false)
+  contactEmail String?
+  contactPhone String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  accounts Account[]
+  sessions Session[]
+  verifications BatchVerification[] @relation("Applicant")
+  reviewedVerifications BatchVerification[] @relation("Reviewer")
+  sosPosts SosPost[]
+  notifications Notification[]
+  events Event[]
+  rsvps Rsvp[]
+  expenses Expense[]
+  sosResponses SosResponse[]
+  eventPhotos EventPhoto[]
+  @@index([batchVerified, directoryVisible, district, profession])
+  @@index([profession, batchVerified, directoryVisible])
+  @@index([district, batchVerified, directoryVisible])
+}
+
+model Account {
+  id String @id @default(cuid())
+  userId String
+  type String
+  provider String
+  providerAccountId String
+  refresh_token String? @db.Text
+  access_token String? @db.Text
+  expires_at Int?
+  token_type String?
+  scope String?
+  id_token String? @db.Text
+  session_state String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id String @id @default(cuid())
+  sessionToken String @unique
+  userId String
+  expires DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token String @unique
+  expires DateTime
+  @@unique([identifier, token])
+}
+
+model EmailOtp {
+  id String @id @default(cuid())
+  email String
+  digest String
+  ipHash String
+  attempts Int @default(0)
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([email, createdAt])
+  @@index([ipHash, createdAt])
+}
+
+model BatchVerification {
+  id String @id @default(cuid())
+  userId String
+  board String
+  roll String
+  registration String
+  school String
+  passingYear Int @default(2013)
+  status VerificationStatus @default(PENDING)
+  reviewNote String?
+  reviewedById String?
+  reviewedAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation("Applicant", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("Reviewer", fields: [reviewedById], references: [id])
+  @@index([status, createdAt])
+  @@index([userId, status])
+  @@unique([board, roll, passingYear])
+}
+
+model SosPost {
+  id String @id @default(cuid())
+  authorId String
+  title String
+  description String
+  category String
+  district String
+  targetProfession String?
+  urgency String @default("urgent")
+  status String @default("OPEN")
+  createdAt DateTime @default(now())
+  author User @relation(fields: [authorId], references: [id])
+  notifications Notification[]
+  responses SosResponse[]
+  @@index([status, createdAt])
+  @@index([category, status, createdAt])
+}
+
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  sosPostId String
+  readAt DateTime?
+  message String?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sosPost SosPost @relation(fields: [sosPostId], references: [id], onDelete: Cascade)
+  @@unique([userId, sosPostId])
+  @@index([userId, readAt])
+}
+
+model Event {
+  id String @id @default(cuid())
+  title String
+  description String
+  location String
+  district String
+  startsAt DateTime
+  capacity Int
+  category String @default("Meetup")
+  image String?
+  creatorId String
+  createdAt DateTime @default(now())
+  creator User @relation(fields: [creatorId], references: [id])
+  rsvps Rsvp[]
+  photos EventPhoto[]
+  @@index([startsAt])
+  @@index([district, startsAt])
+}
+
+model Rsvp {
+  id String @id @default(cuid())
+  eventId String
+  userId String
+  createdAt DateTime @default(now())
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([eventId, userId])
+}
+
+model Expense {
+  id String @id @default(cuid())
+  ownerId String
+  title String
+  totalPaisa Int
+  participants Int
+  createdAt DateTime @default(now())
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  @@index([ownerId, createdAt])
+}
+
+model SosResponse {
+  id String @id @default(cuid())
+  sosPostId String
+  authorId String
+  message String
+  createdAt DateTime @default(now())
+  sosPost SosPost @relation(fields: [sosPostId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  @@index([sosPostId, createdAt])
+}
+
+model EventPhoto {
+  id String @id @default(cuid())
+  eventId String
+  uploaderId String
+  url String
+  caption String
+  createdAt DateTime @default(now())
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  @@index([eventId, createdAt])
+}
