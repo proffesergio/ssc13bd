@@ -4,7 +4,7 @@ A mobile-first community home for Bangladesh’s SSC batch of 2013. Built with N
 
 ## Run locally
 
-Requires Node.js 22+ and npm. From the repository root:
+Requires Node.js 22 and npm. From the repository root:
 
 ```sh
 npm ci
@@ -22,14 +22,13 @@ Open http://localhost:3000. With no `DATABASE_URL`, the app runs a **clearly lab
 
 Routes: `/` dashboard, `/directory` professional search and district view, `/sos` help requests and response threads, `/events` regional meetups and memory walls, `/expenses` BDT bill splitter and private ledger, `/verification` onboarding and profile settings, `/admin` moderator review queue.
 
-## Connect Neon and authentication
+## Credentials and current deployment
 
-1. Create a Neon PostgreSQL project and database. Use the **pooled** connection string for `DATABASE_URL` and the direct connection for `DIRECT_URL`. Append `connection_limit=1&pool_timeout=10` to the pooled URL for conservative serverless connection use.
-2. Copy `frontend/.env.example` to `frontend/.env.local` and fill values. Never commit the resulting file. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
-3. Supply both database variables to your shell when running Prisma commands from the root. Prisma reads `backend/.env` for CLI commands; Next.js reads `frontend/.env.local`. You can create an ignored `backend/.env` with just database settings for local CLI work.
-4. Run `npm run db:generate`, then `npm run db:deploy -w backend` to apply the committed SQL migration. Use a separate Neon development branch for schema changes.
-5. Configure SMTP credentials to enable six-digit email OTP. Codes expire after ten minutes, have limited attempts, and are hashed with the auth secret. Facebook sign-in needs a Meta application with the Facebook Login product, approved permissions, and callback `https://ssc13bd.vercel.app/api/auth/callback/facebook` (localhost during local development).
-6. Sign in once, then run the backend seed command with `MODERATOR_EMAIL` set to deliberately promote the first moderator. See `backend/README.md`. The seed does not create fake accounts or auto-approve SSC membership.
+Both the frontend and backend API are deployed at **https://ssc13bd.vercel.app** in one Vercel project. Neon is migrated; login providers remain unconfigured for this release. Visitors can explore the live site; posting, RSVP, and moderation require authentication and the existing access checks.
+
+Follow the [step-by-step credential guide](docs/credentials.md) for local files, Neon, Vercel environments, and the future Google OAuth client. Next.js reads `frontend/.env.local`; root `.env.local` is an operator reference, and `backend/.env` supplies Prisma CLI settings. Preserve existing secret files. Commit only blank `.env.example` templates.
+
+Google sign-in for both members and administrators is planned for the next iteration. Its placeholder variables do not enable a provider yet. Email OTP and Facebook can stay blank. The [community roadmap](docs/community-roadmap.md) records the worldwide member map, animated connections to Bangladesh, mutual aid, and overseas job referrals.
 
 Users submit SSC board, school, roll, and registration for private moderator review. Approved members may post SOS requests, respond, RSVP, and save expenses. Directory listing is an explicit opt-in. Batch badges confirm membership, **not professional licensing**. Only moderators/admins create meetups. Attending members can share public HTTPS photo links to an event timeline; binary file hosting is not included.
 
@@ -58,4 +57,4 @@ There are no paid service assumptions, cron jobs, websocket servers, or backgrou
 
 Warm ivory surfaces, forest-green accents, editorial serif headings, restrained bento cards, Bangladesh-inspired illustration, keyboard-friendly dialogs, and reduced-motion support. Inspiration research: [Circle community platform](https://circle.so/platform) and [member directory patterns](https://help.circle.so/p/audience/member-management). The requested 12ui and Superdesign workflows were attempted, but their hosted APIs were unavailable in this environment; no hosted design output is claimed.
 
-GitHub CI verifies every push. Vercel Git integration requires a GitHub Login Connection in the Vercel account; without that account connection, use the Vercel CLI for deployment until the repository can be linked.
+GitHub repository `proffesergio/ssc13bd` is connected to Vercel project `newellx/ssc13bd`, with `main` as the production branch. GitHub Actions verifies pushes independently of Vercel's deployment build; check both before considering a release healthy.

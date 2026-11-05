@@ -2,6 +2,8 @@
 
 Shared server package imported by the Next.js frontend. PostgreSQL persistence uses Prisma and a Neon pooled runtime connection. Authentication uses Auth.js/NextAuth v4 with single-use email codes and optional Facebook OAuth. Batch membership approval never certifies professional qualifications.
 
+The current release is deployed through the frontend's Vercel serverless API routes at `https://ssc13bd.vercel.app/api/`. Login configuration is deferred; Google sign-in for members and admins is planned next. Follow the [credential guide](../docs/credentials.md) for environment ownership and provider preparation.
+
 ## Setup
 
 From the repository root:
@@ -10,15 +12,14 @@ From the repository root:
 npm install
 npm run generate --workspace @ssc13bd/backend
 npm run db:deploy --workspace @ssc13bd/backend
-npm run db:seed --workspace @ssc13bd/backend
 npm test --workspace @ssc13bd/backend
 ```
 
-Copy `.env.example` values to `backend/.env` for Prisma commands and to the frontend's `.env.local` for runtime. Use Neon's pooled connection for `DATABASE_URL` and its direct connection for `DIRECT_URL`. Use a strong random `NEXTAUTH_SECRET`; configure the canonical `NEXTAUTH_URL`. Set working SMTP credentials to enable email codes. Facebook requires an application with a matching `/api/auth/callback/facebook` redirect URL. Do not enable automatic email account linking: existing email accounts must sign in using their original provider or email code.
+Copy `backend/.env.example` to `backend/.env` for Prisma commands; use `frontend/.env.example` for `frontend/.env.local` runtime settings. Preserve existing local credentials instead of overwriting them. Use Neon's pooled connection for `DATABASE_URL` and its direct connection for `DIRECT_URL`. Keep optional provider values blank for this release. The Google placeholders are reserved and not consumed yet. Do not enable automatic email account linking: existing accounts must sign in using their original provider.
 
 The committed initial migration provisions the schema with `db:deploy`; run it separately from the Vercel build against the direct database connection. `db:push` is available for disposable development databases only. For subsequent production changes, create reviewed migrations with `npm run db:migrate --workspace @ssc13bd/backend -- --name description`, commit the generated migration, and apply using `npm run db:deploy --workspace @ssc13bd/backend`. Back up the database before schema changes.
 
-The seed grants moderator access only to emails explicitly listed in `MODERATOR_EMAILS`. It does not automatically approve SSC membership. Two moderators are needed to review each other's batch applications because self-approval is forbidden. No illustrative data is inserted into a real community database.
+After sign-in is implemented and trusted accounts have signed in, deliberately run `npm run db:seed --workspace @ssc13bd/backend` with `MODERATOR_EMAILS` set for the intended database. The seed grants `MODERATOR`, not `ADMIN`, and can create missing accounts; avoid running it before OAuth first sign-in. It does not approve SSC membership. Two moderators are needed to review each other's batch applications because self-approval is forbidden. No illustrative data is inserted into a real community database.
 
 ## Frontend integration
 
